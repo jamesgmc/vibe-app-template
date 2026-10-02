@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibe App Template</title>
+    <!-- Include Vibe Core Theme -->
+    <link rel="stylesheet" href="vibe-theme.css">
+    <!-- Include Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <!-- Electron Titlebar -->
+    <div class="titlebar">
+        <div class="titlebar-content">
+            <i data-lucide="zap" class="title-icon"></i>
+            <span>Vibe Application</span>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
+                    <h1 style="margin-bottom: 0;">App Title</h1>
+                    <span class="badge success">
+                        <i data-lucide="check-circle" style="width: 14px; height: 14px;"></i> Active
+                    </span>
+                </div>
+                <p class="subtitle">Subtitle description goes here</p>
+            </div>
+            <div class="header-right">
+                <div class="toggle-container">
+                    <span class="toggle-label">Demo Toggle</span>
+                    <label class="switch">
+                        <input type="checkbox">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <button class="btn primary">
+                    <i data-lucide="plus"></i> Primary Action
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="content">
+            <!-- Your application specific content goes here -->
+            <div style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;">
+                <i data-lucide="layout-template" style="width: 48px; height: 48px; color: var(--text-secondary);"></i>
+                <h2 style="color: var(--text-primary);">Vibe Template Ready</h2>
+                <p style="color: var(--text-secondary);">Build your next application starting here.</p>
+                <div style="display: flex; gap: 12px; margin-top: 16px;">
+                    <button class="btn" onclick="document.getElementById('demoModal').classList.remove('hidden')">Show Modal</button>
+                    <button class="btn warning" onclick="showToast('This is a demo toast!', 'warning')">Show Toast</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Example Modal -->
+    <div id="demoModal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i data-lucide="info"></i> Information</h2>
+                <button class="btn icon-only transparent" onclick="document.getElementById('demoModal').classList.add('hidden')">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>This is a standard modal from the Vibe design system. You can place forms, tables, or other content in here.</p>
+                <input type="text" placeholder="Example input field...">
+            </div>
+            <div class="modal-actions">
+                <button class="btn transparent" onclick="document.getElementById('demoModal').classList.add('hidden')">Cancel</button>
+                <button class="btn primary" onclick="document.getElementById('demoModal').classList.add('hidden')">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Standard Toast Container -->
+    <div id="toast" class="toast hidden">
+        <i data-lucide="info" id="toastIcon"></i>
+        <span id="toastMsg" style="user-select: text;">Notification message</span>
+        <button class="btn icon-only transparent" style="padding: 4px;" onclick="document.getElementById('toast').classList.add('hidden')">
+            <i data-lucide="x"></i>
+        </button>
+    </div>
+
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // Simple toast helper function
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            const toastIcon = document.getElementById('toastIcon');
+            
+            toast.className = `toast ${type}`;
+            toastMsg.textContent = message;
+            
+            // Set appropriate icon based on type
+            let iconName = 'info';
+            if (type === 'success') iconName = 'check-circle';
+            if (type === 'warning') iconName = 'alert-triangle';
+            if (type === 'error') iconName = 'x-circle';
+            
+            // Re-render icon
+            const tempIcon = document.createElement('i');
+            tempIcon.setAttribute('data-lucide', iconName);
+            tempIcon.id = 'toastIcon';
+            toastIcon.parentNode.replaceChild(tempIcon, toastIcon);
+            lucide.createIcons();
+
+            // Auto hide
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
