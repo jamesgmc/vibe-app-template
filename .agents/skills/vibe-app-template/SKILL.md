@@ -25,3 +25,41 @@ When generating a new application for the user using this template:
 4. **Layout Structure**: Maintain the `.app-container` > `.header` + `.content` flex structure to ensure the custom Electron titlebar works correctly and the layout doesn't overflow unexpectedly.
 
 Always prioritize building UI elements using the CSS variables defined in `:root` inside `vibe-theme.css` rather than hardcoding new colors, to maintain the "Vibe".
+
+## Advanced Patterns: Administrator Elevation
+If the user asks to implement an Administrator checking/elevation flow, use this standardized Vibe pattern:
+
+1. **IPC Handlers in `main.js`**:
+```javascript
+// Check if currently running as admin
+ipcMain.handle('check-elevation', async () => {
+    return new Promise((resolve) => {
+        require('child_process').exec('net session', (error) => { resolve(!error); });
+    });
+});
+
+// Restart the application as admin
+ipcMain.handle('relaunch-as-admin', async () => {
+    return new Promise((resolve) => {
+        const exe = process.execPath;
+        const argsStr = process.argv.slice(1).map(arg => `'${arg}'`).join(',');
+        const command = argsStr ? `Start-Process -FilePath '${exe}' -ArgumentList ${argsStr} -Verb RunAs` : `Start-Process -FilePath '${exe}' -Verb RunAs`;
+        
+        require('child_process').exec(`powershell -NoProfile -NonInteractive -Command "${command}"`, (error) => {
+            if (!error) { app.quit(); resolve({ success: true }); } 
+            else { resolve({ success: false }); }
+        });
+    });
+});
+```
+
+2. **UI Implementation in `index.html`**:
+Add these to the header to show the status:
+```html
+<span id="adminBadge" class="badge warning hidden">
+    <i data-lucide="shield-check"></i> Administrator
+</span>
+<button id="restartAdminBtn" class="btn warning hidden">
+    <i data-lucide="shield"></i> Run as Administrator
+</button>
+```
