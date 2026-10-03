@@ -63,3 +63,15 @@ Add these to the header to show the status:
     <i data-lucide="shield"></i> Run as Administrator
 </button>
 ```
+
+## Advanced Patterns: Danger Mode
+For apps managing critical states, implement a "Danger Mode" toggle:
+1. Add a toggle button in the header (only visible to admins).
+2. When activated, reveal an "Actions" column in your tables that exposes destructive actions (like Delete, Disable).
+3. Ensure UI changes smoothly without full reloads by manipulating local data arrays when actions succeed.
+
+## Advanced Patterns: Expandable Table Rows
+When dealing with data-heavy tables, prefer expandable rows over modals for simple metadata:
+1. Add an `onclick` to your `<tr>` that dynamically creates and inserts a sibling `<tr>` right below it.
+2. Style the expanded `<tr>` with a unique class (e.g. `.expanded-row`), `background-color: rgba(255, 255, 255, 0.02)`, and an inset box-shadow to indicate depth.
+3. Include an "Expand All / Collapse All" toggle in the header that iterates through rows to expand them, being careful to update `lucide.createIcons()` after rendering.
