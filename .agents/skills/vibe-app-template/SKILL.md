@@ -75,3 +75,27 @@ When dealing with data-heavy tables, prefer expandable rows over modals for simp
 1. Add an `onclick` to your `<tr>` that dynamically creates and inserts a sibling `<tr>` right below it.
 2. Style the expanded `<tr>` with a unique class (e.g. `.expanded-row`), `background-color: rgba(255, 255, 255, 0.02)`, and an inset box-shadow to indicate depth.
 3. Include an "Expand All / Collapse All" toggle in the header that iterates through rows to expand them, being careful to update `lucide.createIcons()` after rendering.
+
+## Advanced Patterns: Client-Side JSON Export
+For applications that display tabular data, providing an export mechanism without a backend roundtrip is highly efficient:
+1. Include an "Export JSON" button in the header that exports the currently filtered dataset.
+2. Add a dedicated column containing an export button for individual rows.
+3. Use a client-side Blob or Data URI approach to trigger the download directly via a hidden anchor tag.
+```javascript
+function exportData(dataObj, filename = 'export.json') {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataObj, null, 2));
+    const dlAnchorElem = document.createElement('a');
+    dlAnchorElem.setAttribute("href", dataStr);
+    dlAnchorElem.setAttribute("download", filename);
+    document.body.appendChild(dlAnchorElem);
+    dlAnchorElem.click();
+    dlAnchorElem.remove();
+}
+```
+
+## Advanced Patterns: Table Column Sorting
+When tables contain a large number of rows, enable client-side column sorting:
+1. Add state variables for `currentSortColumn` and `currentSortAsc`.
+2. Wrap header text in clickable elements (`<span onclick="setSort('ColumnKey')">...</span>`) with an indicator icon (`<i data-lucide="arrow-up-down"></i>`).
+3. Ensure the `th` element has an opaque background (e.g., `background: linear-gradient(rgba(255,255,255,0.02), rgba(255,255,255,0.02)), var(--bg-surface);`) so scrolling rows don't show through transparent headers.
+4. Update your `filterTasks()` equivalent to `.sort()` the filtered array before rendering, correctly handling string normalization and numeric/date comparisons.
