@@ -99,3 +99,70 @@ When tables contain a large number of rows, enable client-side column sorting:
 2. Wrap header text in clickable elements (`<span onclick="setSort('ColumnKey')">...</span>`) with an indicator icon (`<i data-lucide="arrow-up-down"></i>`).
 3. Ensure the `th` element has an opaque background (e.g., `background: linear-gradient(rgba(255,255,255,0.02), rgba(255,255,255,0.02)), var(--bg-surface);`) so scrolling rows don't show through transparent headers.
 4. Update your `filterTasks()` equivalent to `.sort()` the filtered array before rendering, correctly handling string normalization and numeric/date comparisons.
+
+## Advanced Patterns: State Snapshots & Comparison
+When the application needs to save the current state to disk and compare it later, use the Vibe Snapshot pattern:
+
+1. **IPC Handlers in `main.js`**:
+```javascript
+const path = require('path');
+const fs = require('fs');
+const snapshotsDir = path.join(__dirname, 'snapshots');
+if (!fs.existsSync(snapshotsDir)) fs.mkdirSync(snapshotsDir);
+
+ipcMain.handle('save-snapshot', (event, description, data) => {
+  const filename = `snapshot_${Date.now()}.json`;
+  fs.writeFileSync(path.join(snapshotsDir, filename), JSON.stringify({
+    id: filename, date: new Date().toISOString(), description, data
+  }, null, 2));
+  return { success: true, id: filename };
+});
+
+ipcMain.handle('get-snapshots', () => {
+  if (!fs.existsSync(snapshotsDir)) return [];
+  return fs.readdirSync(snapshotsDir)
+    .filter(f => f.endsWith('.json'))
+    .map(f => JSON.parse(fs.readFileSync(path.join(snapshotsDir, f), 'utf-8')))
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+});
+
+ipcMain.handle('load-snapshot', (event, id) => {
+  return JSON.parse(fs.readFileSync(path.join(snapshotsDir, id), 'utf-8'));
+});
+```
+
+2. **UI Implementation in `index.html`**:
+Add a comparison banner and a modal for snapshot management:
+```html
+<!-- Banner for Comparison Mode -->
+<div id="comparisonBanner" class="comparison-banner hidden">
+    <div class="compare-info">
+        <i data-lucide="git-compare"></i> Comparing: Current vs Snapshot
+    </div>
+    <div class="compare-actions">
+        <button id="exitCompareBtn" class="btn danger">Exit</button>
+    </div>
+</div>
+
+<!-- Snapshots Modal -->
+<div id="snapshotsModal" class="modal-overlay hidden">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Manage Snapshots</h2>
+            <button class="btn icon-only transparent" onclick="/* hide modal */"><i data-lucide="x"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="snapshot-controls" style="display: flex; gap: 12px;">
+                <input type="text" id="snapshotDescInput" placeholder="Description..." style="flex: 1;">
+                <button id="takeSnapshotBtn" class="btn primary"><i data-lucide="camera"></i> Snapshot</button>
+            </div>
+            <div class="snapshot-list-container">
+                <table class="snapshot-table" style="width: 100%;">
+                    <thead><tr><th>Date</th><th>Description</th><th>Action</th></tr></thead>
+                    <tbody id="snapshotsBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+```
